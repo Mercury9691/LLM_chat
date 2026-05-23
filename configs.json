@@ -1,0 +1,167 @@
+{
+  "openai_models": [
+    {
+      "model_name": "Qwen3.6-27B",
+      "name": "llama.cpp-22",
+      "url": "http://10.10.11.22:5000/v1"
+    },
+    {
+      "model_name": "Qwen3.5-122B-A10B-FP8",
+      "name": "Qwen3.5-122B-A10B-FP8",
+      "url": "http://10.10.11.21:8080/v1"
+    },
+    {
+      "model_name": "Qwen3.6-27B",
+      "name": "Qwen3.6-27B",
+      "url": "http://10.10.11.22:8000/v1"
+    },
+    {
+      "model_name": "Qwen3.6-40B",
+      "name": "llama.cpp-31",
+      "url": "http://10.10.11.31:5000/v1"
+    },
+    {
+      "model_name": "Any",
+      "name": "llama.cpp-242",
+      "url": "http://10.10.11.242:5000/v1"
+    },
+    {
+      "name": "Mistral-Medium-3.5-128B",
+      "url": "http://10.10.11.22:8000/v1",
+      "model_name": "Mistral-Medium-3.5-128B"
+    }
+  ],
+  "sampling_params": {
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "top_k": 40
+  },
+  "image_service": {
+    "base_url": "http://10.10.11.31:7860"
+  },
+  "image_services": [
+    {
+      "name": "Z-Image-Turbo",
+      "url": "http://10.10.11.31:6000",
+      "service_type": "zimage",
+      "default_params": {
+        "negative_prompt": "",
+        "height": 1920,
+        "width": 1080,
+        "num_inference_steps": 8,
+        "guidance_scale": 0,
+        "cfg_normalization": false,
+        "seed": 42,
+        "output_dir": "outputs",
+        "output_name": ""
+      },
+      "enabled_params": [
+        "width",
+        "height",
+        "num_inference_steps",
+        "guidance_scale",
+        "seed",
+        "output_dir",
+        "output_name"
+      ],
+      "param_types": {
+        "negative_prompt": "text",
+        "height": "int",
+        "width": "int",
+        "num_inference_steps": "int",
+        "guidance_scale": "float",
+        "cfg_normalization": "boolean",
+        "seed": "int",
+        "output_dir": "text",
+        "output_name": "text"
+      }
+    },
+    {
+      "name": "Z-Image-base",
+      "url": "http://localhost:6001",
+      "service_type": "zimage",
+      "default_params": {
+        "negative_prompt": "",
+        "height": 1280,
+        "width": 720,
+        "num_inference_steps": 50,
+        "guidance_scale": 4,
+        "cfg_normalization": false,
+        "seed": 42,
+        "output_dir": "outputs",
+        "output_name": ""
+      },
+      "enabled_params": [
+        "negative_prompt",
+        "height",
+        "width",
+        "num_inference_steps",
+        "guidance_scale",
+        "cfg_normalization",
+        "seed",
+        "output_dir",
+        "output_name"
+      ],
+      "param_types": {
+        "negative_prompt": "text",
+        "height": "int",
+        "width": "int",
+        "num_inference_steps": "int",
+        "guidance_scale": "float",
+        "cfg_normalization": "boolean",
+        "seed": "int",
+        "output_dir": "text",
+        "output_name": "text"
+      }
+    },
+    {
+      "name": "Hi-dream-o1",
+      "url": "http://10.10.11.31:7860",
+      "service_type": "hidream_o1",
+      "default_params": {
+        "mode": "t2i",
+        "width": 1080,
+        "height": 1920,
+        "seed": 32,
+        "num_inference_steps": 50,
+        "guidance_scale": 5,
+        "shift": 3,
+        "scheduler_name": "default",
+        "editing_scheduler": "flow_match",
+        "keep_original_aspect": true,
+        "preview_steps": "7,14,21"
+      },
+      "enabled_params": [
+        "mode",
+        "width",
+        "height",
+        "seed",
+        "num_inference_steps",
+        "guidance_scale",
+        "shift",
+        "scheduler_name",
+        "editing_scheduler",
+        "keep_original_aspect",
+        "preview_steps"
+      ],
+      "param_types": {
+        "mode": "text",
+        "width": "int",
+        "height": "int",
+        "seed": "int",
+        "num_inference_steps": "int",
+        "guidance_scale": "float",
+        "shift": "float",
+        "scheduler_name": "text",
+        "editing_scheduler": "text",
+        "keep_original_aspect": "boolean",
+        "preview_steps": "text",
+        "negative_prompt": "text",
+        "cfg_normalization": "boolean",
+        "output_dir": "text",
+        "output_name": "text"
+      }
+    }
+  ],
+  "selected_image_service": "Hi-dream-o1"
+}

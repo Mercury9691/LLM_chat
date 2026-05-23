@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+projects/
+.uv-cache
+security/
+static/uploads/

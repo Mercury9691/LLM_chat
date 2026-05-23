@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聊天工作台</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/style.css?v=20260520-scenariofix4">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .think-block {
+            margin-bottom: 12px;
+            background-color: var(--bg-hover, rgba(255,255,255,0.03));
+            border-radius: 8px;
+            padding: 8px 12px;
+            border-left: 3px solid var(--border-color, #444);
+        }
+        .think-block summary {
+            cursor: pointer;
+            font-size: 0.85em;
+            color: #888;
+            user-select: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+        /* Custom arrow for summary */
+        .think-block summary::marker {
+            content: "";
+        }
+        .think-block summary::-webkit-details-marker {
+            display: none;
+        }
+        .think-block summary::before {
+            content: "";
+            font-size: 0.8em;
+            margin-right: 8px;
+            transition: transform 0.2s ease;
+        }
+        .think-block[open] summary::before {
+            transform: rotate(90deg);
+        }
+        .think-block .think-content {
+            color: #888;
+            font-size: 0.85em;
+            margin-top: 8px;
+            line-height: 1.5;
+            padding-left: 5px;
+        }
+        .think-block .think-content p:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+    <style>
+        .think-block {
+            margin: 14px 0;
+            background: var(--think-bg, #f7f7f8);
+            border: 1px solid var(--think-border, #e6e7eb);
+            border-radius: 16px;
+            padding: 12px 14px;
+        }
+        .think-block summary {
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            user-select: none;
+            outline: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            list-style: none;
+        }
+        .think-block summary::marker {
+            content: "";
+        }
+        .think-block summary::-webkit-details-marker {
+            display: none;
+        }
+        .think-block summary::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-right: 1.8px solid currentColor;
+            border-bottom: 1.8px solid currentColor;
+            transform: rotate(-45deg);
+            transition: transform 0.2s ease;
+            margin-right: 2px;
+            flex-shrink: 0;
+        }
+        .think-block[open] summary::before {
+            transform: rotate(45deg);
+        }
+        .think-block .think-content {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+            margin-top: 10px;
+            line-height: 1.7;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+        .think-block .think-content > *:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="bi bi-stars"></i>
+                    <span>工作台</span>
+                </div>
+                <button class="icon-btn" id="toggle-sidebar" title="收起/展开菜单">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+            
+            <div class="project-selector">
+                <select id="project-select" title="切换项目">
+                    <option value="default">默认项目</option>
+                </select>
+                <button class="icon-btn" id="new-project-btn" title="新建项目"><i class="bi bi-plus-lg"></i></button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="chat">
+                    <i class="bi bi-chat-dots"></i>
+                    <span>聊天机器人</span>
+                </button>
+                <button class="nav-item" data-view="preload">
+                    <i class="bi bi-file-earmark-zip"></i>
+                    <span>预设配置</span>
+                </button>
+                <button class="nav-item" data-view="character">
+                    <i class="bi bi-emoji-neutral"></i>
+                    <span>角色管理</span>
+                </button>
+                <button class="nav-item" data-view="gallery">
+                    <i class="bi bi-images"></i>
+                    <span>图库</span>
+                </button>
+                <button class="nav-item" data-view="scenario">
+                    <i class="bi bi-diagram-3"></i>
+                    <span>AI场景推演</span>
+                </button>
+                <button class="nav-item" data-view="template">
+                    <i class="bi bi-clipboard"></i>
+                    <span>模板管理</span>
+                </button>
+                <button class="nav-item" data-view="segment">
+                    <i class="bi bi-book"></i>
+                    <span>片段管理</span>
+                </button>
+                <button class="nav-item" data-view="system">
+                    <i class="bi bi-gear"></i>
+                    <span>系统设置</span>
+                </button>
+            </nav>
+
+            <details class="sampling-panel" id="sampling-panel">
+                <summary class="sampling-title">
+                    <div class="sampling-title-left">
+                        <i class="bi bi-sliders"></i>
+                        <span>采样参数</span>
+                    </div>
+                    <i class="bi bi-chevron-down sampling-chevron"></i>
+                </summary>
+                <div class="sampling-body">
+                    <div class="sampling-row">
+                        <div class="sampling-label">
+                            <span>温度</span>
+                            <span class="sampling-range">0-2</span>
+                        </div>
+                        <input type="range" class="sampling-slider" id="sampling-temperature-slider" min="0" max="100" step="1">
+                        <input type="number" class="sampling-input" id="sampling-temperature" min="0" max="2" step="0.01" placeholder="0.70">
+                    </div>
+                    <div class="sampling-row">
+                        <div class="sampling-label">
+                            <span>top_p</span>
+                            <span class="sampling-range">0-1</span>
+                        </div>
+                        <input type="range" class="sampling-slider" id="sampling-top-p-slider" min="0" max="100" step="1">
+                        <input type="number" class="sampling-input" id="sampling-top-p" min="0" max="1" step="0.01" placeholder="0.90">
+                    </div>
+                    <div class="sampling-row">
+                        <div class="sampling-label">
+                            <span>top_k</span>
+                            <span class="sampling-range">1-200</span>
+                        </div>
+                        <input type="range" class="sampling-slider" id="sampling-top-k-slider" min="0" max="100" step="1">
+                        <input type="number" class="sampling-input" id="sampling-top-k" min="1" max="200" step="1" placeholder="40">
+                    </div>
+                    <div class="sampling-hint">建议: 温度 0.7, top_p 0.9, top_k 40</div>
+                    <div class="sampling-actions">
+                        <button class="btn btn-secondary" id="sampling-recommend-btn">应用建议</button>
+                        <button class="btn btn-primary" id="sampling-save-btn">保存参数</button>
+                    </div>
+                </div>
+            </details>
+            
+            <div class="sidebar-footer">
+                <select id="model-select" class="model-select">
+                    <!-- Loaded dynamically -->
+                    <option value="vllm">vLLM</option>
+                </select>
+            </div>
+        </aside>
+
+        <!-- Sidebar backdrop for mobile -->
+        <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Mobile hamburger -->
+            <button class="icon-btn mobile-menu-btn" id="mobile-menu-btn" title="菜单" style="position:absolute;top:10px;left:10px;z-index:50;display:none;">
+                <i class="bi bi-list" style="font-size:1.4rem;"></i>
+            </button>
+            <!-- View: Chat -->
+            <div class="view-section active" id="view-chat">
+                <div class="chat-container">
+                    <div class="chat-toolbar">
+                        <div class="chat-toolbar-title">
+                            <span class="chat-toolbar-eyebrow">Chat Workspace</span>
+                            <h1>Assistant</h1>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will appear here -->
+                        <div class="message system-greeting">
+                            <h2>你好，今天有什么可以帮你的吗？</h2>
+                        </div>
+                    </div>
+                    <div class="chat-input-wrapper">
+                        <div class="chat-controls">
+                            <label class="toggle-control">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="thinking-toggle">
+                                    <span class="slider"></span>
+                                </div>
+                                <span>开启思考</span>
+                            </label>
+                            <label class="toggle-control">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="include-thinking-toggle" checked>
+                                    <span class="slider"></span>
+                                </div>
+                                <span>思考入上下文</span>
+                            </label>
+                            <label class="toggle-control">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="preload-toggle">
+                                    <span class="slider"></span>
+                                </div>
+                                <span>开启预载</span>
+                            </label>
+                            <label class="toggle-control">
+                                <div class="toggle-switch">
+                                    <input type="checkbox" id="prompt-agent-toggle">
+                                    <span class="slider"></span>
+                                </div>
+                                <span>提示词优化</span>
+                            </label>
+                            <div class="image-gen-control">
+                                <label class="toggle-control image-gen-toggle">
+                                    <div class="toggle-switch">
+                                        <input type="checkbox" id="image-gen-toggle">
+                                        <span class="slider"></span>
+                                    </div>
+                                    <span>图片生成</span>
+                                    <span class="service-status-dot offline" id="image-service-status-dot" title="图片服务离线"></span>
+                                </label>
+                                <button class="icon-btn image-gen-expand" id="image-gen-expand-btn" title="生成参数">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
+                            <button class="btn-text" id="clear-chat-btn">
+                                <i class="bi bi-trash"></i> 清空聊天
+                            </button>
+                        </div>
+                        <div class="image-gen-panel hidden" id="image-gen-panel">
+                            <div class="image-gen-mode-bar hidden" id="hidream-mode-bar">
+                                <div class="image-gen-field">
+                                    <label>模式</label>
+                                    <select id="hidream-mode">
+                                        <option value="t2i">文生图</option>
+                                        <option value="edit">编辑</option>
+                                        <option value="subject">多参考主体</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="image-gen-field image-gen-field-wide" data-image-param="negative_prompt">
+                                <label>Negative Prompt</label>
+                                <input type="text" id="image-gen-negative-prompt" placeholder="可选">
+                            </div>
+                            <div class="image-gen-field" data-image-param="width">
+                                <label>宽度</label>
+                                <input type="number" id="image-gen-width" min="64" max="2048" step="64" value="1024">
+                            </div>
+                            <div class="image-gen-field" data-image-param="height">
+                                <label>高度</label>
+                                <input type="number" id="image-gen-height" min="64" max="2048" step="64" value="1024">
+                            </div>
+                            <div class="image-gen-field" data-image-param="num_inference_steps">
+                                <label>步数</label>
+                                <input type="number" id="image-gen-steps" min="1" max="100" step="1" value="8">
+                            </div>
+                            <div class="image-gen-field" data-image-param="guidance_scale">
+                                <label>Guidance</label>
+                                <input type="number" id="image-gen-guidance" min="0" max="30" step="0.1" value="0.0">
+                            </div>
+                            <div class="image-gen-field" data-image-param="cfg_normalization">
+                                <label>CFG Normalization</label>
+                                <label class="image-gen-checkbox">
+                                    <input type="checkbox" id="image-gen-cfg-normalization">
+                                    <span>启用</span>
+                                </label>
+                            </div>
+                            <div class="image-gen-field" data-image-param="seed">
+                                <label>Seed</label>
+                                <input type="number" id="image-gen-seed" step="1" value="42">
+                            </div>
+                            <div class="image-gen-field" data-image-param="output_dir">
+                                <label>服务输出目录</label>
+                                <input type="text" id="image-gen-output-dir" value="outputs">
+                            </div>
+                            <div class="image-gen-field" data-image-param="output_name">
+                                <label>文件名</label>
+                                <input type="text" id="image-gen-output-name" placeholder="自动生成">
+                            </div>
+                            <div class="image-gen-field hidden" data-image-param="mode">
+                                <label>模式</label>
+                                <select id="hidream-mode-inline">
+                                    <option value="t2i">文生图</option>
+                                    <option value="edit">编辑</option>
+                                    <option value="subject">多参考主体</option>
+                                </select>
+                            </div>
+                            <div class="image-gen-field hidden" data-image-param="shift">
+                                <label>Shift</label>
+                                <input type="number" id="hidream-shift" min="0" max="20" step="0.1" value="3.0">
+                            </div>
+                            <div class="image-gen-field hidden" data-image-param="scheduler_name">
+                                <label>Scheduler</label>
+                                <select id="hidream-scheduler-name">
+                                    <option value="default">default</option>
+                                    <option value="flow_match">flow_match</option>
+                                    <option value="flash">flash</option>
+                                </select>
+                            </div>
+                            <div class="image-gen-field hidden" data-image-param="editing_scheduler">
+                                <label>编辑 Scheduler</label>
+                                <select id="hidream-editing-scheduler">
+                                    <option value="flow_match">flow_match</option>
+                                    <option value="default">default</option>
+                                    <option value="flash">flash</option>
+                                </select>
+                            </div>
+                            <div class="image-gen-field hidden" data-image-param="keep_original_aspect">
+                                <label>保持原图比例</label>
+                                <label class="image-gen-checkbox">
+                                    <input type="checkbox" id="hidream-keep-original-aspect" checked>
+                                    <span>启用</span>
+                                </label>
+                            </div>
+                            <div class="image-gen-field hidden" data-image-param="preview_steps">
+                                <label>预览步数</label>
+                                <input type="text" id="hidream-preview-steps" placeholder="7,14,21">
+                            </div>
+                        </div>
+                        <div class="chat-input-container">
+                            <button class="icon-btn upload-btn" id="upload-btn" title="上传媒体">
+                                <i class="bi bi-plus-circle"></i>
+                            </button>
+                            <input type="file" id="file-input" accept="image/*,image/heic,image/heif,video/mp4" style="display: none;">
+                            <div class="input-editor">
+                                <div id="media-preview-container" class="media-preview-container hidden">
+                                    <!-- Media preview here -->
+                                </div>
+                                <textarea id="chat-input" placeholder="在此输入提示词..." rows="1"></textarea>
+                            </div>
+                            <button class="icon-btn send-btn" id="send-btn" title="发送">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                        <div class="chat-footer-info">
+                            <span id="token-count-display">上下文 Token: 0</span>
+                            <span class="footer-separator">|</span>
+                            <span>AI 生成的内容可能不准确。</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right Sidebar for Conversations -->
+                <div class="right-sidebar collapsed" id="right-sidebar">
+                    <div class="right-sidebar-header">
+                        <h3>对话记录</h3>
+                        <button class="icon-btn" id="toggle-right-sidebar" title="收起"><i class="bi bi-layout-sidebar-reverse"></i></button>
+                    </div>
+                    <div class="right-sidebar-content">
+                        <button class="btn btn-primary w-100" id="new-chat-btn" style="margin-bottom: 12px;"><i class="bi bi-plus-lg"></i> 新对话</button>
+                        <div class="chat-history-list" id="dialog-list">
+                            <!-- Conversations will appear here -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Floating toggle button when right sidebar is collapsed -->
+                <button class="icon-btn right-sidebar-toggle-floating" id="right-sidebar-toggle-floating" title="展开对话记录"><i class="bi bi-layout-sidebar-reverse"></i></button>
+            </div>
+
+            <!-- View: Preload -->
+            <div class="view-section" id="view-preload">
+                <div class="view-header">
+                    <h2>预设配置</h2>
+                </div>
+                <div class="view-body form-view">
+                    <div class="form-group">
+                        <label>角色信息</label>
+                        <textarea id="preload-character" rows="8" placeholder="角色设定提示词..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>模板信息</label>
+                        <textarea id="preload-template" rows="8" placeholder="模板设定提示词..."></textarea>
+                    </div>
+                    <div class="action-bar">
+                        <button class="btn btn-primary" id="save-preload-btn">保存预设</button>
+                        <button class="btn btn-secondary" id="clear-preload-btn">清空</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Character / Template / Segment -->
+            <!-- We will reuse one table/form structure for CRUD via JS -->
+            <div class="view-section" id="view-crud">
+                <div class="view-header">
+                    <h2 id="crud-title">管理</h2>
+                    <button class="btn btn-primary" id="crud-add-btn"><i class="bi bi-plus"></i> 新增</button>
+                </div>
+                <div class="view-body">
+                    <div class="crud-layout">
+                        <div class="crud-list" id="crud-list">
+                            <!-- List items loaded dynamically -->
+                        </div>
+                        <div class="crud-editor hidden" id="crud-editor">
+                            <h3 id="crud-editor-title">编辑项目</h3>
+                            <div class="form-group">
+                                <label>名称</label>
+                                <input type="text" id="crud-name">
+                            </div>
+                            <div class="form-group">
+                                <label>内容</label>
+                                <textarea id="crud-info" rows="10"></textarea>
+                            </div>
+                             <div class="form-group" id="crud-img-group">
+                                <label>图片 (可多选)</label>
+                                <div class="image-gallery-container">
+                                    <div id="crud-img-gallery" class="image-gallery"></div>
+                                    <div class="gallery-add-btn" id="gallery-add-btn">
+                                        <i class="bi bi-plus-lg"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="crud-img-upload" accept="image/*,image/heic,image/heif" multiple style="display: none;">
+                            </div>
+                            <div class="action-bar">
+                                <button class="btn btn-primary" id="crud-save-btn">保存</button>
+                                <button class="btn btn-secondary" id="crud-delete-btn">删除</button>
+                                <button class="btn btn-outline" id="crud-gallery-btn" style="display: none;"><i class="bi bi-images"></i> 画廊 (Gallery)</button>
+                                <button class="btn btn-outline" id="crud-send-preload-btn">发送到预设</button>
+                                <button class="btn btn-text" id="crud-cancel-btn">取消</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-gallery">
+                <div class="view-header">
+                    <h2>图库</h2>
+                    <button class="btn btn-secondary" id="gallery-refresh-btn"><i class="bi bi-arrow-clockwise"></i> 刷新</button>
+                </div>
+                <div class="view-body gallery-view">
+                    <div class="gallery-shell">
+                        <div class="gallery-tabs" id="gallery-tabs">
+                            <button class="gallery-tab active" data-gallery-tab="chat">聊天图片</button>
+                            <button class="gallery-tab" data-gallery-tab="character">角色图片</button>
+                            <button class="gallery-tab" data-gallery-tab="generated">创建的图片</button>
+                        </div>
+                        <div class="gallery-hint" id="gallery-hint"></div>
+                        <div class="gallery-grid" id="gallery-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="view-section" id="view-scenario">
+                <div class="scenario-shell">
+                    <div class="scenario-home" id="scenario-home">
+                        <div class="view-header">
+                            <h2>AI场景推演</h2>
+                            <button class="btn btn-primary" id="scenario-new-btn"><i class="bi bi-plus-lg"></i> 新建推演</button>
+                        </div>
+                        <div class="scenario-list" id="scenario-game-list"></div>
+                    </div>
+
+                    <div class="scenario-setup hidden" id="scenario-setup">
+                        <div class="view-header">
+                            <h2 id="scenario-setup-title">初始条件设定</h2>
+                            <button class="btn btn-secondary" id="scenario-back-btn"><i class="bi bi-arrow-left"></i> 返回列表</button>
+                        </div>
+                        <div class="scenario-setup-grid">
+                            <div class="scenario-panel">
+                                <div class="form-group">
+                                    <label>标题</label>
+                                    <input type="text" id="scenario-title" class="input-element" placeholder="例如：雨夜庄园谋杀案">
+                                </div>
+                                <div class="form-group">
+                                    <label>故事背景</label>
+                                    <textarea id="scenario-background" class="input-element scenario-textarea" rows="5" placeholder="时代、地点、人物关系、故事类型"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>当前场景</label>
+                                    <textarea id="scenario-scene" class="input-element scenario-textarea" rows="5" placeholder="所有故事目前发生在哪个场景下"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>初始状态</label>
+                                    <textarea id="scenario-initial-state" class="input-element scenario-textarea" rows="5" placeholder="游戏开始时的态势，也可以写入此前发生的事"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>主故事线</label>
+                                    <textarea id="scenario-main-story-input" class="input-element scenario-textarea" rows="6" placeholder="可为空，开始时会使用初始状态生成"></textarea>
+                                </div>
+                            </div>
+                            <div class="scenario-panel">
+                                <div class="scenario-panel-header">
+                                    <h3>角色</h3>
+                                    <div class="scenario-list-actions">
+                                        <button class="btn btn-secondary" id="scenario-import-characters-btn"><i class="bi bi-download"></i> 从角色管理导入</button>
+                                        <button class="btn btn-secondary" id="scenario-add-role-btn"><i class="bi bi-person-plus"></i> 添加角色</button>
+                                    </div>
+                                    <label class="toggle-control">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="scenario-thinking-toggle">
+                                            <span class="slider"></span>
+                                        </div>
+                                        <span>模型思考</span>
+                                    </label>
+                                </div>
+                                <div class="scenario-role-editor" id="scenario-roles-editor"></div>
+                                <div class="scenario-setup-actions">
+                                    <button class="btn btn-secondary" id="scenario-save-setup-btn">保存设定</button>
+                                    <button class="btn btn-primary" id="scenario-start-btn">保存并开始</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="scenario-game hidden" id="scenario-game">
+                        <div class="scenario-story-pane">
+                            <div class="scenario-game-header">
+                                <div>
+                                    <span class="chat-toolbar-eyebrow">Main Story</span>
+                                    <h2 id="scenario-game-title">AI场景推演</h2>
+                                </div>
+                                <div class="scenario-game-actions">
+                                    <button class="btn btn-secondary" id="scenario-edit-btn"><i class="bi bi-pencil"></i> 编辑设定</button>
+                                    <button class="btn btn-secondary" id="scenario-refresh-btn"><i class="bi bi-arrow-clockwise"></i> 刷新</button>
+                                </div>
+                            </div>
+                            <div class="scenario-story-toolbar">
+                                <div class="scenario-story-switch">
+                                    <button class="btn btn-secondary active" id="scenario-view-main-btn">主故事线</button>
+                                    <button class="btn btn-secondary" id="scenario-view-model-btn">模型实际输入</button>
+                                </div>
+                                <div class="scenario-story-tokens" id="scenario-story-tokens">Token: 0</div>
+                            </div>
+                            <div class="scenario-story-meta" id="scenario-story-meta"></div>
+                            <div class="scenario-story-content" id="scenario-main-story"></div>
+                        </div>
+                        <!-- Claude Code-style chat stream pane -->
+                        <div class="sc-stream-pane" id="scenario-stream-pane">
+                            <div class="sc-stream-header">
+                                <div class="sc-stream-header-left">
+                                    <i class="bi bi-terminal"></i>
+                                    <span>推演工作流</span>
+                                </div>
+                                <span id="scenario-status" class="scenario-status">待机</span>
+                            </div>
+                            <div class="sc-stream-messages" id="scenario-stream-log"></div>
+                            <div class="sc-stream-toolbar" id="scenario-stream-toolbar">
+                                <div class="sc-toolbar-row sc-toolbar-primary">
+                                    <button class="sc-action-btn sc-action-primary" id="scenario-generate-actions-btn"><i class="bi bi-play-fill"></i> 生成 AI 行动</button>
+                                    <button class="sc-action-btn sc-action-primary" id="scenario-resolve-btn"><i class="bi bi-clipboard-check"></i> 管理员结算</button>
+                                    <button class="sc-action-btn sc-action-primary" id="scenario-generate-narrative-btn" style="display:none;"><i class="bi bi-pencil-square"></i> 生成正文</button>
+                                    <button class="sc-action-btn sc-action-commit" id="scenario-commit-btn" style="display:none;"><i class="bi bi-check-lg"></i> 写入主故事线</button>
+                                </div>
+                                <div class="sc-toolbar-row sc-toolbar-secondary">
+                                    <button class="sc-tool-btn" id="scenario-summarize-btn" title="压缩上下文"><i class="bi bi-arrows-collapse"></i><span>压缩</span></button>
+                                    <button class="sc-tool-btn" id="scenario-clear-summary-btn" title="取消压缩"><i class="bi bi-arrows-expand"></i><span>取消压缩</span></button>
+                                    <button class="sc-tool-btn" id="scenario-order-toggle-btn" title="调整行动顺序"><i class="bi bi-arrow-down-up"></i><span>顺序</span></button>
+                                    <button class="sc-tool-btn" id="scenario-clear-board-btn" title="清空当前回合"><i class="bi bi-eraser"></i><span>清空回合</span></button>
+                                    <button class="sc-tool-btn" id="scenario-reset-progress-btn" title="重置推进"><i class="bi bi-arrow-counterclockwise"></i><span>重置</span></button>
+                                    <div class="sc-toolbar-divider"></div>
+                                    <label class="sc-toggle" title="模型思考">
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="scenario-thinking-toggle-control">
+                                            <span class="slider"></span>
+                                        </div>
+                                        <span>思考</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Hidden textareas for data storage (used by JS) -->
+                        <textarea id="scenario-pending-resolution" class="hidden" style="display:none;"></textarea>
+                        <textarea id="scenario-final-resolution" class="hidden" style="display:none;"></textarea>
+                        <div id="scenario-human-actions" class="hidden" style="display:none;"></div>
+                        <div id="scenario-actions" class="hidden" style="display:none;"></div>
+                        <div id="scenario-role-order-list" class="hidden" style="display:none;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: System -->
+            <div class="view-section" id="view-system">
+                <div class="view-header">
+                    <h2>系统管理</h2>
+                </div>
+                <div class="view-body system-view">
+                    <div class="card">
+                        <h3>备份项目</h3>
+                        <p>创建当前项目数据的备份。</p>
+                        <button class="btn btn-primary" id="sys-backup-btn">立即备份</button>
+                    </div>
+                    <div class="card">
+                        <h3>导出项目</h3>
+                        <p>将当前项目导出为 ZIP 压缩包。</p>
+                        <button class="btn btn-secondary" id="sys-export-btn">导出 ZIP</button>
+                    </div>
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <h3>OpenAI 模型管理</h3>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>显示名称 (Unique)</th>
+                                    <th>API URL (vLLM Base)</th>
+                                    <th>模型名称 (vLLM Name)</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sys-model-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="model-form" style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+                            <input type="text" id="new-model-display-name" class="input-element" placeholder="显示名称">
+                            <input type="text" id="new-model-url" class="input-element" placeholder="URL (http://.../v1)">
+                            <input type="text" id="new-model-name" class="input-element" placeholder="模型名称">
+                            <button class="btn btn-primary" id="sys-add-model-btn">添加模型</button>
+                        </div>
+                    </div>
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <div class="model-card-header">
+                            <h3>图片生成模型管理</h3>
+                            <div class="model-select-row">
+                                <select id="image-service-select" class="input-element"></select>
+                                <button class="btn btn-secondary" id="image-service-test-selected-btn">测试连通性</button>
+                            </div>
+                        </div>
+                        <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>显示名称 (Unique)</th>
+                                        <th>类型</th>
+                                        <th>服务 URL</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                            <tbody id="image-service-list">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="model-form">
+                            <input type="text" id="new-image-service-name" class="input-element" placeholder="显示名称">
+                            <select id="new-image-service-type" class="input-element">
+                                <option value="zimage">Z-Image</option>
+                                <option value="hidream_o1">HiDream-O1</option>
+                            </select>
+                            <input type="text" id="new-image-service-url" class="input-element" placeholder="URL (http://localhost:6001)">
+                            <button class="btn btn-primary" id="image-service-add-btn">添加服务</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="modal-shell hidden" id="image-param-modal">
+        <div class="modal-backdrop" id="image-param-modal-backdrop"></div>
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-eyebrow">Image Service</span>
+                    <h3 id="image-param-modal-title">默认参数模板</h3>
+                </div>
+                <button class="icon-btn" id="image-param-modal-close" title="关闭">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-copy">在这里维护当前图片模型的默认参数模板。启用的参数会在生成时发送到对应服务。</p>
+                <div class="param-template-list" id="param-template-list"></div>
+                <button class="btn btn-outline" id="param-template-add-btn">
+                    <i class="bi bi-plus-lg"></i> 新增参数
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-text" id="image-param-modal-cancel">取消</button>
+                <button class="btn btn-primary" id="image-param-modal-save">保存模板</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-shell hidden" id="scenario-import-modal">
+        <div class="modal-backdrop" id="scenario-import-modal-backdrop"></div>
+        <div class="modal-card scenario-import-modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-eyebrow">Scenario Roles</span>
+                    <h3 id="scenario-import-modal-title">从角色管理导入</h3>
+                </div>
+                <button class="icon-btn" id="scenario-import-modal-close" title="关闭">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-copy">勾选需要导入到场景推演中的角色。已存在同名角色会自动禁用。</p>
+                <div class="scenario-import-toolbar">
+                    <button class="btn btn-secondary" id="scenario-import-select-all-btn"><i class="bi bi-check2-square"></i> 全选可导入</button>
+                    <button class="btn btn-secondary" id="scenario-import-clear-btn"><i class="bi bi-square"></i> 全不选</button>
+                    <span class="scenario-import-count" id="scenario-import-count">已选 0 项</span>
+                </div>
+                <div class="scenario-import-list" id="scenario-import-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-text" id="scenario-import-modal-cancel">取消</button>
+                <button class="btn btn-primary" id="scenario-import-modal-save">导入选中</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/js/api.js?v=20260520-scenariofix4"></script>
+    <script src="/static/js/app.js?v=20260520-scenariofix4"></script>
+</body>
+</html>
+
